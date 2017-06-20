@@ -1,0 +1,59 @@
+We make the standard dll from C code, in addition we add:
+/ Делаем стандартную dll из C кода, кроме того добавляем:
+
+#include "mex.h" 
+void __cdecl mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] ); 
+
+// mexFunction - функция понятная матлабовскому компилятору, аналог функции main
+
+void mexFunction ( int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[] )
+{
+	int i;
+	int ok = 1;
+	double *d; 
+	memset(plhs, nlhs, 0);
+	// magic
+	if (7 == nrhs) {
+		double m = 0.0; 
+		int ind = 0;
+		double *input = malloc(sizeof *input * nlhs);
+		if (NULL == input) return;
+		for (i = 0; i < nrhs; i++) {
+			ok = 0;
+			if (mxIsDouble(prhs[i])) {
+				ok = 1;
+				d = mxGetPr(prhs[i]);
+				input[i] = *d;
+			}
+		}	
+		if (ok) {		     
+			StatNeuroResultsRAVM(input, &ind, &m); 
+		    //if (good) 
+			plhs[0] = mxCreateDoubleScalar(m); 
+			plhs[1] = mxCreateDoubleScalar(ind+1);
+			//nlhs = 2;
+		}
+		free(input);
+	}
+	
+	
+	return;
+}
+
+// 
+//    int nlhs (количество ВЫХодных параметров) - number of outputs
+//   int nrhs (количество ВХодных параметров) - number of inputs
+
+// 		Сами параметры передаются в массивах
+
+//    plhs (ВЫХодные параметры) - array of outputs
+//    prhs (ВХодные параметры) - array of inputs
+
+In Mathlab (!) we compile / В матлабе(!) компилируем:
+mex StatNeuroResultsRAVM.c
+
+Then you can call the function / После чего можно вызывать функцию:
+[x,y]=StatNeuroResultsRAVM(1,1,1,1,1,1,1)
+
+x,y - выходные (output)
+1,1,1,1,1,1,1 - входные (input).
